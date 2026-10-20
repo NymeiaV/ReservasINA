@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Devolver Préstamo #{{ prestamo.id }} - {{ prestamo.usuario.nombre_completo }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-9 col-md-10">
+            <h2 class="mb-4">Devolver Préstamo #{{ prestamo.id }} - {{ prestamo.usuario.nombre_completo }}</h2>
+            
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Información del Préstamo</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Usuario:</strong> {{ prestamo.usuario.nombre_completo }}</p>
+                            <p><strong>Fecha de préstamo:</strong> {{ prestamo.fecha_prestamo.strftime('%d/%m/%Y') }}</p>
+                            <p><strong>Hora de retiro:</strong> {{ prestamo.hora_retiro.strftime('%H:%M') }}</p>
+                            <p><strong>Hora de devolución esperada:</strong> {{ prestamo.hora_devolucion_esperada.strftime('%H:%M') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Cantidad prestada:</strong> {{ prestamo.cantidad }} máquina(s)</p>
+                            <p><strong>Estado actual:</strong> 
+                                <span class="badge bg-{{ 'success' if prestamo.estado == 'entregado' else 'warning' if prestamo.estado == 'pendiente_entrega' else 'info' if prestamo.estado == 'pendiente_devolucion' else 'danger' }}">
+                                    {{ prestamo.estado|capitalize }}
+                                </span>
+                            </p>
+                            {% if prestamo.fecha_devolucion_final %}
+                                <p><strong>Fecha de devolución final:</strong> {{ prestamo.fecha_devolucion_final.strftime('%d/%m/%Y %H:%M') }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if prestamo.estado == 'pendiente_devolucion' %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Registrar Devolución</h5>
+                    
+                    <div class="alert alert-info">
+                        <strong>Nota:</strong> La fecha y hora de devolución se registrarán automáticamente al confirmar.
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="observaciones" class="form-label">Observaciones (opcional):</label>
+                        <textarea name="observaciones" id="observaciones" class="form-control" rows="3" placeholder="Ingrese cualquier observación sobre el estado de las computadoras devueltas..."></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-success me-md-2">Confirmar Devolución</button>
+                        <a href="{{ url_for('main.prestamos') }}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <form method="POST" action="{{ url_for('main.devolver_prestamo', prestamo_id=prestamo.id) }}">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-danger">Eliminar Préstamo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

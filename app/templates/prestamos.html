@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Préstamos de la Semana{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Préstamos de la Semana ({{ monday.strftime('%d/%m') }} - {{ friday.strftime('%d/%m/%Y') }})</h2>
+    
+    {% if dias_con_prestamos %}
+        {% for dia in dias_con_prestamos %}
+        <div class="mb-4">
+            <h3 class="mb-3">
+                {{ dia.fecha.strftime('%A %d/%m/%Y') }}
+                {% if dia.fecha == today %}<span class="badge bg-primary ms-2">Hoy</span>{% endif %}
+            </h3>
+            
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Usuario</th>
+                            <th scope="col">Horario</th>
+                            <th scope="col">Cant.</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Acciones</th>
+                            <th scope="col">Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prestamo in dia.prestamos %}
+                        <tr>
+                            <td>{{ prestamo.id }}</td>
+                            <td>{{ prestamo.usuario.nombre_completo }}</td>
+                            <td>{{ prestamo.hora_retiro.strftime('%H:%M') }} - {{ prestamo.hora_devolucion_esperada.strftime('%H:%M') }}</td>
+                            <td>{{ prestamo.cantidad }}</td>
+                            <td>
+                                {% if prestamo.estado == 'pendiente_entrega' %}
+                                    <span class="badge bg-warning text-dark">⏳ Pendiente entrega</span>
+                                {% elif prestamo.estado == 'activo' %}
+                                    <span class="badge bg-danger">🔴 Activo</span>
+                                {% elif prestamo.estado == 'entregado' %}
+                                    <span class="badge bg-success">✅ Entregado</span>
+                                {% elif prestamo.estado == 'pendiente_devolucion' %}
+                                    <span class="badge bg-info text-dark">🔄 Pendiente devolución</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ prestamo.estado|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if prestamo.estado == 'pendiente_entrega' %}
+                                    <a href="{{ url_for('main.entregar_prestamo', prestamo_id=prestamo.id) }}" class="btn btn-outline-warning btn-sm">Confirmar entrega</a>
+                                {% elif prestamo.estado == 'activo' or prestamo.estado == 'pendiente_devolucion' %}
+                                    <a href="{{ url_for('main.devolver_prestamo', prestamo_id=prestamo.id) }}" class="btn btn-outline-danger btn-sm">Devolver</a>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="POST" action="{{ url_for('main.eliminar_prestamo', prestamo_id=prestamo.id) }}" class="d-inline" onsubmit="return confirm('¿Eliminar este préstamo?');">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">No hay préstamos programados para esta semana (lunes a viernes).</p>
+    {% endif %}
+</div>
+{% endblock %}

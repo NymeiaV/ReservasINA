@@ -1,0 +1,45 @@
+from app import create_app, db
+from app.models import Computadora, PrestamoDetalle, Prestamo
+from datetime import datetime, timedelta
+
+def update_estados():
+    app = create_app()
+    with app.app_context():
+        now = datetime.now()
+        today = now.date()
+        computers = Computadora.query.all()
+        for comp in computers:
+            # If in mantenimiento, keep it
+            if comp.estado == 'mantenimiento':
+                continue
+            # Find active loan for this computer (not returned yet)
+            # Solo considerar préstamos CONFIRMADOS (estado='activo'), ignorar 'pendiente_entrega'
+            active_loans = PrestamoDetalle.query.join(Prestamo).filter(
+                PrestamoDetalle.computadora_id == comp.id,
+                PrestamoDetalle.hora_devolucion_real == None,
+                Prestamo.estado == 'activo'  # Solo préstamos confirmados en entrega
+            ).all()
+            if not active_loans:
+                comp.estado = 'disponible'
+            else:
+                # Assuming at most one active loan
+                detalle = active_loans[0]
+                prestamo = detalle.prestamo
+                loan_start = datetime.combine(prestamo.fecha_prestamo, prestamo.hora_retiro)
+                # Only consider loans for today
+                if prestamo.fecha_prestamo == today:
+                    if now < loan_start - timedelta(hours=1):
+                        # Antes de la ventana de reserva: disponible (a menos que haya otro préstamo diferente hoy)
+                        comp.estado = 'disponible'
+                    elif now >= loan_start - timedelta(hours=1) and now < loan_start:
+                        comp.estado = 'solicitado'  # Amarillo: Reservadas (1h antes)
+                    elif now >= loan_start:
+                        comp.estado = 'prestado'    # Rojo: En uso (a partir de la hora exacta de retiro)
+                    else:
+                        comp.estado = 'disponible'
+                else:
+                    comp.estado = 'disponible'  # Loan is for another day (past or future)
+        db.session.commit()
+
+if __name__ == '__main__':
+    update_estados()

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - Estado de Computadoras{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-12 col-xl-12">
+            <h2>Estado Actual de las Computadoras</h2>
+
+            <!-- Maintenance alert -->
+            <div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
+                <i class="bi bi-tools me-2"></i>
+                <div>
+                    <strong>Equipos en Mantenimiento:</strong>
+                    <span class="badge bg-secondary ms-2">PC #10</span>
+                    <span class="badge bg-secondary ms-2">PC #26</span>
+                    <div class="small mt-1">Total disponible para préstamo: 28 de 30 equipos</div>
+                </div>
+            </div>
+
+            <!-- Counters and progress bar -->
+            <div class="row mb-4 justify-content-center">
+                <div class="col-md-5 text-center">
+                    <div class="h-100 p-3 bg-light border rounded">
+                        <div class="h5 mb-1"><i class="bi bi-check-circle-fill text-success"></i></div>
+                        <div class="h4 mb-0">Disponibles</div>
+                        <div class="h1 mb-3"><span id="available-count">28</span></div>
+                        <div class="small text-muted">de 30</div>
+                    </div>
+                </div>
+                <div class="col-md-5 text-center">
+                    <div class="h-100 p-3 bg-light border rounded">
+                        <div class="h5 mb-1"><i class="bi bi-x-circle-fill text-danger"></i></div>
+                        <div class="h4 mb-0">En uso</div>
+                        <div class="h1 mb-3"><span id="in-use-count">0</span></div>
+                        <div class="small text-muted">de 30</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center mb-4">
+                <div class="progress" style="height: 30px;">
+                    <div class="progress-bar bg-success" role="progressbar" id="available-progress" style="width: 93.33%;"></div>
+                    <div class="progress-bar bg-danger" role="progressbar" id="in-use-progress" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="button-container mb-4 d-flex justify-content-center">
+                <a href="{{ url_for('main.registrar_prestamo') }}" class="btn btn-primary btn-lg me-2">Registrar Nueva Reserva</a>
+                <a href="{{ url_for('main.prestamos') }}" class="btn btn-secondary btn-lg">Ver Préstamos de la Semana</a>
+            </div>
+
+            <!-- Today's loans table -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Usuario</th>
+                            <th>Horario</th>
+                            <th>Cant.</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loans-tbody">
+                        {% for prestamo in prestamos_hoy %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ prestamo.usuario.apellido }}, {{ prestamo.usuario.nombre }}</td>
+                            <td>{{ prestamo.hora_retiro.strftime('%H:%M') }} - {{ prestamo.hora_devolucion_esperada.strftime('%H:%M') }}</td>
+                            <td>{{ prestamo.cantidad }}</td>
+                            <td>
+                                <span class="badge {% if prestamo.estado == 'pendiente_entrega' %}bg-warning{% elif prestamo.estado == 'activo' %}bg-info{% elif prestamo.estado == 'devuelto' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ prestamo.estado|capitalize }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if prestamo.estado == 'pendiente_entrega' %}
+                                <a href="{{ url_for('main.entregar_prestamo', prestamo_id=prestamo.id) }}" class="btn btn-sm btn-outline-success">Entregar</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

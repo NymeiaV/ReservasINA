@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmar Entrega - Préstamo {{ prestamo.id }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Confirmar Entrega - Préstamo #{{ prestamo.id }}</h2>
+    
+    <div class="alert alert-info">
+        <strong>Profesor:</strong> {{ prestamo.usuario.nombre_completo }}<br>
+        <strong>Fecha:</strong> {{ prestamo.fecha_prestamo.strftime('%d/%m/%Y') }}<br>
+        <strong>Horario:</strong> {{ prestamo.hora_retiro.strftime('%H:%M') }} - {{ prestamo.hora_devolucion_esperada.strftime('%H:%M') }}<br>
+        <strong>Cantidad a entregar:</strong> {{ prestamo.cantidad }} máquina(s)
+    </div>
+    
+    {% if disponibles < prestamo.cantidad %}
+    <div class="alert alert-warning">
+        <strong>Advertencia:</strong> Solo hay {{ disponibles }} máquinas disponibles, pero se necesitan {{ prestamo.cantidad }}.
+        ¿Desea continuar de todas formas?
+    </div>
+    {% else %}
+    <div class="alert alert-success">
+        ✅ Hay {{ disponibles }} máquinas disponibles. Suficientes para las {{ prestamo.cantidad }} solicitadas.
+    </div>
+    {% endif %}
+    
+    <form method="POST" action="{{ url_for('main.entregar_prestamo', prestamo_id=prestamo.id) }}">
+        <button type="submit" class="btn btn-primary btn-lg">Confirmar Entrega de {{ prestamo.cantidad }} Máquina(s)</button>
+        <a href="{{ url_for('main.prestamos') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

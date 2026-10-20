@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Historial de Préstamos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Historial de Préstamos</h2>
+    
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <label for="profesor_id" class="form-label">Profesor</label>
+            <select class="form-select" id="profesor_id" name="profesor_id">
+                <option value="">Todos</option>
+                {% for user in usuarios %}
+                <option value="{{ user.id }}" {% if filtros.profesor_id == user.id %}selected{% endif %}>{{ user.nombre_completo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="fecha_desde" class="form-label">Fecha Desde</label>
+            <input type="date" class="form-control" id="fecha_desde" name="fecha_desde" value="{{ filtros.fecha_desde or '' }}">
+        </div>
+        <div class="col-md-3">
+            <label for="fecha_hasta" class="form-label">Fecha Hasta</label>
+            <input type="date" class="form-control" id="fecha_hasta" name="fecha_hasta" value="{{ filtros.fecha_hasta or '' }}">
+        </div>
+    </div>
+    
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <button type="button" class="btn btn-primary w-100" onclick="aplicarFiltros()">Aplicar Filtros</button>
+        </div>
+        <div class="col-md-3">
+            <button type="button" class="btn btn-secondary w-100" onclick="limpiarFiltros()">Limpiar</button>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('main.prestamos') }}" class="btn btn-success w-100">Ver Préstamos Activos</a>
+        </div>
+    </div>
+    
+    <!-- Results -->
+    {% if prestamos %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Fecha</th>
+                    <th>Profesor</th>
+                    <th>Horario</th>
+                    <th>Cantidad</th>
+                    <th>Estado</th>
+                    <th>Hora Devolución Real</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prestamo in prestamos %}
+                <tr>
+                    <td>{{ prestamo.id }}</td>
+                    <td>{{ prestamo.fecha_prestamo.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ prestamo.usuario.nombre_completo }}</td>
+                    <td>
+                        {{ prestamo.hora_retiro.strftime('%H:%M') }} - 
+                        {{ prestamo.hora_devolucion_esperada.strftime('%H:%M') }}
+                    </td>
+                    <td>{{ prestamo.cantidad }}</td>
+                    <td>
+                        {% if prestamo.estado == 'pendiente_entrega' %}
+                            <span class="badge bg-warning text-dark">⏳ Pendiente entrega</span>
+                        {% elif prestamo.estado == 'activo' %}
+                            <span class="badge bg-danger">🔴 Activo</span>
+                        {% elif prestamo.estado == 'entregado' %}
+                            <span class="badge bg-success">✅ Entregado</span>
+                        {% elif prestamo.estado == 'pendiente_devolucion' %}
+                            <span class="badge bg-info text-dark">🔄 Pendiente devolución</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ prestamo.estado|title }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ prestamo.horario_devolucion.strftime('%H:%M') if prestamo.horario_devolucion else 'Pendiente' }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        No se encontraron préstamos devueltos con los filtros aplicados.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function aplicarFiltros() {
+    const profesor_id = document.getElementById('profesor_id').value;
+    const fecha_desde = document.getElementById('fecha_desde').value;
+    const fecha_hasta = document.getElementById('fecha_hasta').value;
+    
+    const url = new URL(window.location);
+    if (profesor_id) url.searchParams.set('profesor_id', profesor_id);
+    else url.searchParams.delete('profesor_id');
+    
+    if (fecha_desde) url.searchParams.set('fecha_desde', fecha_desde);
+    else url.searchParams.delete('fecha_desde');
+    
+    if (fecha_hasta) url.searchParams.set('fecha_hasta', fecha_hasta);
+    else url.searchParams.delete('fecha_hasta');
+    
+    window.location.href = url.toString();
+}
+
+function limpiarFiltros() {
+    const url = new URL(window.location);
+    url.searchParams.delete('profesor_id');
+    url.searchParams.delete('fecha_desde');
+    url.searchParams.delete('fecha_hasta');
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}
