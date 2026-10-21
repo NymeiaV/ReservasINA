@@ -7,7 +7,7 @@
     <div class="row justify-content-center">
         <div class="col-xl-8 col-lg-9 col-md-10">
             <h2 class="mb-4">Devolver Préstamo #{{ prestamo.id }} - {{ prestamo.usuario.nombre_completo }}</h2>
-            
+
             <!-- Flash messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
@@ -19,7 +19,7 @@
                     {% endfor %}
                 {% endif %}
             {% endwith %}
-            
+
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Información del Préstamo</h5>
@@ -32,46 +32,47 @@
                         </div>
                         <div class="col-md-6">
                             <p><strong>Cantidad prestada:</strong> {{ prestamo.cantidad }} máquina(s)</p>
-                            <p><strong>Estado actual:</strong> 
-                                <span class="badge bg-{{ 'success' if prestamo.estado == 'entregado' else 'warning' if prestamo.estado == 'pendiente_entrega' else 'info' if prestamo.estado == 'pendiente_devolucion' else 'danger' }}">
+                            <p><strong>Estado actual:</strong>
+                                <span class="badge bg-{{ 'success' if prestamo.estado == 'devuelto' else 'warning' if prestamo.estado == 'pendiente_entrega' else 'danger' if prestamo.estado == 'activo' else 'info' }}">
                                     {{ prestamo.estado|capitalize }}
                                 </span>
                             </p>
-                            {% if prestamo.fecha_devolucion_final %}
-                                <p><strong>Fecha de devolución final:</strong> {{ prestamo.fecha_devolucion_final.strftime('%d/%m/%Y %H:%M') }}</p>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
-            
-            {% if prestamo.estado == 'pendiente_devolucion' %}
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Registrar Devolución</h5>
-                    
-                    <div class="alert alert-info">
-                        <strong>Nota:</strong> La fecha y hora de devolución se registrarán automáticamente al confirmar.
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label for="observaciones" class="form-label">Observaciones (opcional):</label>
-                        <textarea name="observaciones" id="observaciones" class="form-control" rows="3" placeholder="Ingrese cualquier observación sobre el estado de las computadoras devueltas..."></textarea>
-                    </div>
-                    
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <button type="submit" class="btn btn-success me-md-2">Confirmar Devolución</button>
-                        <a href="{{ url_for('main.prestamos') }}" class="btn btn-outline-secondary">Cancelar</a>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-            
+
+            {% if prestamo.estado == 'activo' or prestamo.estado == 'pendiente_devolucion' %}
             <form method="POST" action="{{ url_for('main.devolver_prestamo', prestamo_id=prestamo.id) }}">
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <button type="submit" class="btn btn-danger">Eliminar Préstamo</button>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Registrar Devolución</h5>
+                        <div class="alert alert-info">
+                            <strong>Nota:</strong> La fecha y hora de devolución se registrarán automáticamente al confirmar.
+                        </div>
+                        <div class="mb-4">
+                            <label for="observaciones" class="form-label">Observaciones (opcional):</label>
+                            <textarea name="observaciones" id="observaciones" class="form-control" rows="3" placeholder="Ingrese cualquier observación..."></textarea>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="devolucion_total" id="devolucion_total" checked>
+                            <label class="form-check-label" for="devolucion_total">Devolución total (todas las máquinas)</label>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cantidad_devuelta" class="form-label">Cantidad a devolver (si es parcial):</label>
+                            <input type="number" class="form-control" name="cantidad_devuelta" id="cantidad_devuelta" value="{{ prestamo.cantidad }}" min="1" max="{{ prestamo.cantidad }}">
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-success me-md-2">Confirmar Devolución</button>
+                            <a href="{{ url_for('main.prestamos') }}" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </div>
                 </div>
             </form>
+            {% else %}
+            <div class="alert alert-secondary">Este préstamo ya fue devuelto (estado: {{ prestamo.estado }}).</div>
+            <a href="{{ url_for('main.prestamos') }}" class="btn btn-outline-primary">Volver a Préstamos</a>
+            {% endif %}
         </div>
     </div>
 </div>

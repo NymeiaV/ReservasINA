@@ -34,6 +34,7 @@ class Prestamo(db.Model):
     hora_devolucion_final = db.Column(db.DateTime, nullable=True)
     horario_devolucion = db.Column(db.Time, nullable=True)
     cantidad = db.Column(db.Integer, nullable=False, default=0)
+    observaciones = db.Column(db.Text, nullable=True)  # Notas al devolver
     estado = db.Column(db.String(20), nullable=False, default='pendiente_entrega')  # pendiente_entrega, activo, devuelto
     
     # Relationships

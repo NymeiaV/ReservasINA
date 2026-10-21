@@ -158,6 +158,9 @@ def devolver_prestamo(prestamo_id):
         try:
             devolucion_total = request.form.get('devolucion_total') == 'on'
             cantidad_devuelta = request.form.get('cantidad_devuelta', type=int)
+            observaciones = request.form.get('observaciones', '').strip()
+            if observaciones:
+                prestamo.observaciones = observaciones
             
             if devolucion_total:
                 # Devolver todo
@@ -224,6 +227,11 @@ def entregar_prestamo(prestamo_id):
     
     elif request.method == 'POST':
         try:
+            # Guardar observaciones si se enviaron
+            observaciones = request.form.get('observaciones', '').strip()
+            if observaciones:
+                prestamo.observaciones = observaciones
+            
             # Confirmar entrega - cambiar estado a activo
             prestamo.estado = 'activo'
             db.session.commit()

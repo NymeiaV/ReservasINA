@@ -52,6 +52,7 @@
                     <th>Cantidad</th>
                     <th>Estado</th>
                     <th>Hora Devolución Real</th>
+                    <th>Observaciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -80,6 +81,16 @@
                     </td>
                     <td>
                         {{ prestamo.horario_devolucion.strftime('%H:%M') if prestamo.horario_devolucion else 'Pendiente' }}
+                    </td>
+                    <td>
+                        {% if prestamo.observaciones %}
+                        <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="collapse" data-bs-target="#obs-{{ prestamo.id }}" aria-expanded="false">Ver nota</button>
+                        <div class="collapse mt-2" id="obs-{{ prestamo.id }}">
+                            <div class="alert alert-light border small p-2 mb-0">{{ prestamo.observaciones }}</div>
+                        </div>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
