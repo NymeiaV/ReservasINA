@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Administrar - Sistema de Préstamos{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-xl-10 col-lg-11 col-md-12">
+            <h2 class="mb-4"><i class="bi bi-gear-fill me-2"></i>Administración</h2>
+
+            <!-- Sección: Máquinas disponibles -->
+            <div class="card mb-5">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Equipos (Total disponibles para préstamo)</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.admin') }}">
+                        <input type="hidden" name="accion" value="actualizar_total">
+                        <div class="row align-items-end">
+                            <div class="col-md-4">
+                                <label for="total_computadoras" class="form-label">Cantidad total de computadoras disponibles</label>
+                                <input type="number" class="form-control" id="total_computadoras" name="total_computadoras" value="{{ total_computadoras }}" min="1" max="50" autocomplete="off">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="maquinas_mantenimiento" class="form-label">Equipos en mantenimiento (separados por coma, ej: 10,26)</label>
+                                <input type="text" class="form-control" id="maquinas_mantenimiento" name="maquinas_mantenimiento" value="{{ mantenimiento_str }}" autocomplete="off">
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary w-100">Guardar cambios</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sección: Usuarios (Profesores) -->
+            <div class="card mb-5">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Profesores / Usuarios</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.admin') }}" class="mb-4">
+                        <input type="hidden" name="accion" value="agregar_usuario">
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" name="apellido" placeholder="Apellido" required>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" name="nombre" placeholder="Nombre" required>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-success w-100"><i class="bi bi-person-plus-fill me-1"></i>Agregar profesor</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <h5>Lista actual de profesores</h5>
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr><th>#</th><th>Apellido</th><th>Nombre</th><th>Acción</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for user in usuarios %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>{{ user.apellido }}</td>
+                                <td>{{ user.nombre }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('admin.admin') }}" class="d-inline" onsubmit="return confirm('¿Eliminar a {{ user.apellido }}, {{ user.nombre }}?');">
+                                        <input type="hidden" name="accion" value="eliminar_usuario">
+                                        <input type="hidden" name="usuario_id" value="{{ user.id }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

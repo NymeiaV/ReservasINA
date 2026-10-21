@@ -1,11 +1,37 @@
 from app import db
 from datetime import datetime, timedelta
+import os
 
-# Total de computadoras disponibles (configurable)
+# Leer configuración dinámica de total y mantenimiento
+CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'instance', 'config_total.txt')
 TOTAL_COMPUTADORAS = 28
-
-# Computadoras en mantenimiento / fuera de servicio
 MAQUINAS_MANTENIMIENTO = [10, 26]
+
+try:
+    with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+        lines = f.read().strip().split('\n')
+        if lines and lines[0].strip().isdigit():
+            TOTAL_COMPUTADORAS = int(lines[0].strip())
+        manten = [int(x.strip()) for x in lines[1:] if x.strip().isdigit()]
+        if manten:
+            MAQUINAS_MANTENIMIENTO = manten
+except Exception:
+    pass
+
+def leer_config_dinamica():
+    global TOTAL_COMPUTADORAS, MAQUINAS_MANTENIMIENTO
+    try:
+        with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+            lines = f.read().strip().split('\n')
+            if lines and lines[0].strip().isdigit():
+                TOTAL_COMPUTADORAS = int(lines[0].strip())
+            manten = [int(x.strip()) for x in lines[1:] if x.strip().isdigit()]
+            if manten:
+                MAQUINAS_MANTENIMIENTO = manten
+    except Exception:
+        pass
+
+# Las variables TOTAL_COMPUTADORAS y MAQUINAS_MANTENIMIENTO se definen arriba (líneas 7-8) y se actualizan dinámicamente
 
 class Usuario(db.Model):
     __tablename__ = 'usuarios'
@@ -64,6 +90,7 @@ class Prestamo(db.Model):
 # Funciones helper para calcular disponibilidad
 
 def get_estado_resumen(fecha=None):
+    leer_config_dinamica()
     """Retorna dict con disponibles y en_uso para la vista de inicio (solo préstamos activos)"""
     if fecha is None:
         fecha = datetime.now().date()

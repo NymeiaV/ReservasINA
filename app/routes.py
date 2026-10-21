@@ -14,14 +14,19 @@ def index():
         Prestamo.fecha_prestamo == today
     ).order_by(Prestamo.hora_retiro).all()
     
+    # Releer configuración dinámica (total, mantenimiento) en caso de cambios en /admin
+    from app.models import leer_config_dinamica
+    leer_config_dinamica()
+    
     # Get estado resumen for the counters
     estado_resumen = get_estado_resumen(today)
     
+    from app import models
     return render_template('index.html', 
                          prestamos_hoy=prestamos_hoy, 
                          today=today,
                          estado_resumen=estado_resumen,
-                         maquinas_mantenimiento=MAQUINAS_MANTENIMIENTO)
+                         maquinas_mantenimiento=models.MAQUINAS_MANTENIMIENTO)
 
 @bp.route('/prestamos')
 def prestamos():

@@ -29,6 +29,9 @@
                     <li class="nav-item">
                         <a class="nav-link {% if request.endpoint == 'main.historial' %}active{% endif %}" href="{{ url_for('main.historial') }}">Historial de Préstamos</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'admin.admin' %}active{% endif %}" href="{{ url_for('admin.admin') }}">Administrar</a>
+                    </li>
                 </ul>
             </div>
         </div>

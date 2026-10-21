@@ -13,9 +13,10 @@
                 <i class="bi bi-tools me-2"></i>
                 <div>
                     <strong>Equipos en Mantenimiento:</strong>
-                    <span class="badge bg-secondary ms-2">PC #10</span>
-                    <span class="badge bg-secondary ms-2">PC #26</span>
-                    <div class="small mt-1">Total disponible para préstamo: 28 de 30 equipos</div>
+                    {% for m in maquinas_mantenimiento %}
+                    <span class="badge bg-secondary ms-2">PC #{{ m }}</span>
+                    {% endfor %}
+                    <div class="small mt-1">Total disponible para préstamo: {{ estado_resumen.total }} de {{ 30 }} equipos (mantenimiento: {{ maquinas_mantenimiento | length }})</div>
                 </div>
             </div>
 
